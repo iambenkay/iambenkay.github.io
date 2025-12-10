@@ -1,0 +1,53 @@
+#blog-body {
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        font-weight: bold;
+        margin-top: 1rem;
+    }
+
+    h1 {
+        font-size: 3rem;
+    }
+
+    h2 {
+        font-size: 2rem;
+    }
+
+    h3 {
+        font-size: 1.2rem;
+    }
+
+    p {
+        margin-bottom: 1rem;
+    }
+
+    ol {
+        margin-left: 2rem;
+        list-style: decimal;
+    }
+
+    pre {
+        padding: 1rem;
+        margin: 1rem 0;
+        border-radius: 8px;
+
+        code {
+            border-radius: 0px !important;
+            color: #c0c5ce !important;
+            padding: 0 !important;
+            background: transparent !important;
+        }
+    }
+
+    code {
+        border-radius: 4px;
+        color: red;
+        padding: 2px 4px;
+        background: rgba(255, 0, 0, 0.1);
+    }
+}

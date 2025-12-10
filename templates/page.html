@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{%block content %}
+<h1 class="mt-10 text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900">{{ page.title }}</h1>
+<p class="text-slate-500 mt-3">{{ page.date | date(format="%B %d, %Y") }}</p>
+<img loading="lazy" src="{{ page.extra.header_img }}" alt="{{page.extra.header_alt}}" class="mt-5 rounded">
+<div id="blog-body" class="markdown mt-10">{{ page.content | safe }}</div>
+<script src="https://utteranc.es/client.js"
+        repo="iambenkay/devblog"
+        issue-term="{{page.path }}"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script>
+{%endblock content %}

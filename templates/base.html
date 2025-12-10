@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Benkay's Programming Articles</title>
+  <link href="{{ get_url(path='markdown.css') }}" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="bg-[#e9edf6] min-h-screen">
+  <div class="relative min-h-screen">
+    <div class="absolute inset-0">
+      <div class="h-full w-full bg-[url('/images/background.jpg')] bg-cover bg-center"></div>
+    </div>
+    <div class="absolute top-6 left-6 select-none">
+      <a href="/blog/" class="flex flex-col items-center group">
+        <img src="{{ get_url(path='images/folder.png') }}" alt="Blog" class="w-16 h-16 rounded-lg shadow-soft ring-1 ring-black/5 transition-transform group-hover:scale-105">
+        <span class="mt-1 text-xs font-medium text-white px-2 py-0.5 rounded">Blog</span>
+      </a>
+    </div>
+    <div id="floating-window" class="flex flex-col gap-2 relative max-w-5xl mx-auto translate-y-20 p-1 pt-1 bg-white rounded max-h-[calc(80vh)]">
+        <div id="drag-handle" class="flex gap-2 p-2 cursor-move select-none touch-none">
+            <div class="size-3 bg-red-500 rounded-full cursor-pointer"></div>
+            <div class="size-3 bg-yellow-500 rounded-full cursor-pointer"></div>
+            <div class="size-3 bg-green-500 rounded-full cursor-pointer"></div>
+        </div>
+      <div class="bg-white rounded shadow-soft ring-1 ring-black/5 overflow-y-auto">
+        <div class="px-6 md:px-10">
+          <div class="flex items-center justify-between h-16">
+            <a href="/"><div class="w-8 h-8 rounded-full bg-rose-500 text-white flex items-center justify-center font-bold"></div></a>
+            <!-- <nav class="hidden md:flex items-center gap-6 text-sm text-slate-400">
+              <a href="/" class="text-rose-500 font-semibold border-b-2 border-rose-500">LOGS</a>
+              <a href="#" class="hover:text-slate-600">TWITTER</a>
+            </nav> -->
+          </div>
+          {% block content %}{% endblock content %}
+          <div class="h-8"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    (function() {
+      const win = document.getElementById('floating-window');
+      if (!win) return;
+      const handle = document.getElementById('drag-handle') || win;
+      let startX = 0, startY = 0;
+      let offsetX = 0, offsetY = 0;
+      let dragging = false;
+
+      const setTransform = () => {
+        win.style.transform = `translate3d(${offsetX}px, ${offsetY}px, 0)`;
+        win.style.willChange = 'transform';
+      };
+
+      const onPointerDown = (e) => {
+        dragging = true;
+        handle.setPointerCapture && handle.setPointerCapture(e.pointerId);
+        startX = e.clientX - offsetX;
+        startY = e.clientY - offsetY;
+        document.body.style.userSelect = 'none';
+      };
+
+      const onPointerMove = (e) => {
+        if (!dragging) return;
+        offsetX = e.clientX - startX;
+        offsetY = e.clientY - startY;
+        setTransform();
+      };
+
+      const endDrag = (e) => {
+        dragging = false;
+        document.body.style.userSelect = '';
+        handle.releasePointerCapture && handle.releasePointerCapture(e.pointerId);
+      };
+
+      handle.addEventListener('pointerdown', onPointerDown);
+      window.addEventListener('pointermove', onPointerMove);
+      window.addEventListener('pointerup', endDrag);
+      window.addEventListener('pointercancel', endDrag);
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+[tasks.build]
+command = "zola"
+args = ["build"]
+
+[tasks.tailwind-build]
+script = "npx @tailwindcss/cli -i styles/markdown.css -o static/styles/markdown.css --minify"
+
+
+[tasks.tailwind-watch]
+script = "npx @tailwindcss/cli -i styles/markdown.css -o static/styles/markdown.css --watch"
+
+[tasks.dev]
+command = "zola"
+args = ["serve"]
+
+[tasks.release]
+run_task = { name = ["build"] }
