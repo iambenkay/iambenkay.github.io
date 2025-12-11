@@ -64,4 +64,4 @@ In this case you will need to transfer the data from the `7.x` instance of the D
 5. Use `rs.status()` to check the status of the replica set.
 
 ## Conclusion
-That was what worked for me. Let me know 
+That was what worked for me. Let me know in the comments if you run into any issues with this process and I'll try to help you out.

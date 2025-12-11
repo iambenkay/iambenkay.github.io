@@ -32,14 +32,16 @@
     }
 
     pre {
-        padding: 1rem;
         margin: 1rem 0;
         border-radius: 8px;
+        position: relative;
 
         code {
+            display: block;
+            padding: 1rem !important;
+            overflow-x: auto;
             border-radius: 0px !important;
             color: #c0c5ce !important;
-            padding: 0 !important;
             background: transparent !important;
         }
     }

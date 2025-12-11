@@ -3,12 +3,40 @@
 <h1 class="mt-10 text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900">{{ page.title }}</h1>
 <p class="text-slate-500 mt-3">{{ page.date | date(format="%B %d, %Y") }}</p>
 <img loading="lazy" src="{{ page.extra.header_img }}" alt="{{page.extra.header_alt}}" class="mt-5 rounded">
-<div id="blog-body" class="markdown mt-10">{{ page.content | safe }}</div>
+<div id="blog-body" class="markdown my-10">{{ page.content | safe }}</div>
 <script src="https://utteranc.es/client.js"
         repo="iambenkay/iambenkay.github.io"
-        issue-term="{{ page.path }}"
+        issue-term="pathname"
         theme="github-light"
         crossorigin="anonymous"
         async>
+</script>
+<script>
+    function loadCopyButtons() {
+        const codeBlocks = document.querySelectorAll("pre");
+
+        codeBlocks.forEach(block => {
+            const copyBtn = document.createElement("div");
+            copyBtn.textContent = "Copy";
+            copyBtn.classList.add("absolute", "top-[0.5rem]", "right-[0.5rem]", "bg-white/10", "cursor-pointer", "rounded", "px-1", "py-0.5");
+            block.appendChild(copyBtn);
+        })
+
+        codeBlocks.forEach(block => {
+            const copyBtn = block.querySelector("div");
+            copyBtn.addEventListener("click", () => {
+                const code = block.textContent;
+                navigator.clipboard.writeText(code);
+                copyBtn.textContent = "Copied!";
+                setTimeout(() => {
+                    copyBtn.textContent = "Copy";
+                }, 2000);
+            })
+        })
+    }
+
+    (function () {
+        loadCopyButtons()
+    })()
 </script>
 {%endblock content %}
