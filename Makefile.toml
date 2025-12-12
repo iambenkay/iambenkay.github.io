@@ -11,7 +11,7 @@ script = "npx @tailwindcss/cli -i styles/markdown.css -o static/styles/markdown.
 
 [tasks.dev]
 command = "zola"
-args = ["serve"]
+args = ["serve", "--drafts"]
 
 [tasks.release]
 run_task = { name = ["build"] }

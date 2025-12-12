@@ -14,6 +14,7 @@
       </div>
     </div>
   </a>
+  <h2 class="mt-10 text-xl md;text-2xl font-extrabold tracking-tight">Older articles</h2>
   <div class="mt-10 grid gap-8 md:grid-cols-3">
     {% for page in section.pages %}
       {% if loop.index == 1 %}
@@ -21,10 +22,10 @@
       {% endif %}
       <a href="{{ page.path }}">
         <article>
-          <div class="h-40 rounded bg-gradient-to-br from-sky-400 via-indigo-500 to-violet-600"></div>
+          <img loading="lazy" src="{{ page.extra.header_img }}" alt="{{page.extra.header_alt}}" class="h-40 rounded bg-gradient-to-br from-fuchsia-500 via-violet-500 to-sky-400 shadow-lg object-cover object-center">
           <p class="mt-3 text-xs text-slate-500">{{ page.date | date(format="%B %d, %Y") }}</p>
           <h3 class="mt-1 text-lg font-semibold text-slate-900">{{ page.title }}</h3>
-          <p class="mt-2 text-sm text-slate-600">{{ page.description }}</p>
+          <p class="mt-2 text-sm text-slate-600">{{ page.description }}...</p>
         </article>
       </a>
     {% endfor %}
