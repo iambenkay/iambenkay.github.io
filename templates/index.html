@@ -1,6 +1,9 @@
 {% extends "base.html" %}
+{% block head %}
+    <title>Today I wrote about</title>
+{% endblock head %}
 {%block content %}
-<h1 class="mt-4 text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900">Programming Articles</h1>
+<h1 class="mt-4 text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900">Today I wrote about</h1>
   {% set first_page = section.pages | first %}
   <a href="{{ first_page.path }}">
     <div class="mt-8 grid md:grid-cols-2 gap-8">
