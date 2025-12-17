@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+    <title>My hackaround for upgrading MongoDB from 7.x to 8.0</title>
+    <meta property="og:title" content="My hackaround for upgrading MongoDB from 7.x to 8.0">
+    <meta property="og:description" content="Recently I had to upgrade MongoDB from 7.x to 8.0 to use some of the new features including bulk writes (the Rust SDK does not support this feature for 7.x versions yet). I tried to follow the official migration documentation for migrating an existing replica">
+    <meta property="og:image" content="&#x2F;images&#x2F;header-mongo.jpg">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https:&#x2F;&#x2F;iambenkay.github.io&#x2F;upgrade-from-mongo-7-x-to-8-0&#x2F;">
+    <meta property="article:published_time" content="2025-12-07">
+    <meta property="article:section" content="Programming">
+    
+        <meta property="article:tag" content="MongoDB">
+    
+        <meta property="article:tag" content="Upgrade">
+    
+
+  <link href="/markdown.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="bg-white min-h-screen">
+    <div class="flex flex-col gap-2 max-w-5xl mx-auto p-1 bg-white">
+      <div class="bg-white overflow-y-auto">
+        <div class="px-6 md:px-10">
+          <div class="flex items-center justify-between h-16">
+            <a href="/"><div class="w-8 h-8 rounded-full bg-rose-500 text-white flex items-center justify-center font-bold"></div></a>
+          </div>
+          
+<h1 class="mt-10 text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900">My hackaround for upgrading MongoDB from 7.x to 8.0</h1>
+<p class="text-slate-500 mt-3">December 07, 2025</p>
+
+<img loading="lazy" src="https:&#x2F;&#x2F;iambenkay.github.io&#x2F;processed_images&#x2F;header-mongo.b8ee85ed62f2f307.jpg" alt="MongoDB" class="mt-5 rounded w-full">
+<div id="blog-body" class="markdown my-10"><p>Recently I had to upgrade <strong>MongoDB</strong> from <code>7.x</code> to <code>8.0</code> to use some of the new features including bulk writes (the Rust SDK does not support this feature for <code>7.x</code> versions yet). I tried to follow the official migration documentation for migrating an existing replica set to 8.0 but I encountered a major issue that I want to share with you. Ultimately we will discuss my workaround for this.</p>
+<h2 id="background">Background</h2>
+<p>MongoDB has since made replica sets the recommended way to configure your <strong>MongoDB</strong> deployments even if it is just one instance. Configuring your database in this way ensures that your data is always available and protected from hardware failures thanks to the replication. This seemingly innocuous configuration which pretends like it is here to save you from the risk of data loss may also be the reason you are unable to upgrade your mongo deployment. I made sure to follow the documentation for migrating replica sets step by step until the end, the only unique thing about my scenario is that it is still a single node replica set.</p>
+<p>Something I would advice is to make sure that you have a backup of your data before you start the migration process. This is especially important if you are running a single node replica set as it is the only node that contains all your data. If something goes wrong during the migration process, you will lose all your data.</p>
+<p>The actual issue I encountered was after stepping down the node from primary and swapping the binaries to 8.0, the node would not start up. The error message in the container logs for mongo looked like WiredTiger related issues and it denoted an incompatibility or corruption of some sort.</p>
+<h2 id="solution">Solution</h2>
+<p>I found two ways to fix this problem, both of which involving transferring the data from the old node to a new node, just that one is done manually by you while the other is done automatically by the replica set configuration.</p>
+<h3 id="manual-transfer">Manual Transfer</h3>
+<p>In this case you will need to transfer the data from the <code>7.x</code> instance of the DB to a new <code>8.0</code> instance.</p>
+<ol>
+<li>Create a new <code>8.0</code> instance of MongoDB.</li>
+<li>Download <strong>mongo</strong> cli tools (specifically <code>mongodump</code> and <code>mongorestore</code>) for your operating system.</li>
+<li>Use <code>mongodump</code> to dump the data from the <code>7.x</code> instance.
+Here is the command for dumping the data from the <code>7.x</code> instance:<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">mongodump --uri </span><span>&quot;$</span><span style="color:#bf616a;">MONGODB_URI</span><span>&quot;</span><span style="color:#bf616a;"> --gzip
+</span></code></pre>
+This will create a dump of your database in a folder called <code>dump</code> in the same directory. We used <code>--gzip</code> to compress the bson files</li>
+<li>Use <code>mongorestore</code> to restore the data to the new <code>8.0</code> instance.
+Here is the command for restoring the data to the new <code>8.0</code> instance:<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">mongorestore --uri</span><span>=&quot;$</span><span style="color:#bf616a;">MONGODB_URI</span><span>&quot;</span><span style="color:#bf616a;"> --gzip --dir</span><span>=dump</span><span style="color:#bf616a;"> --drop
+</span></code></pre>
+This will restore the data from the dump folder to the new <code>8.0</code> instance. The <code>--drop</code> flag will drop the database before restoring the data. This is useful if you want to start with a clean database.</li>
+</ol>
+<h3 id="replica-set-transfer">Replica Set Transfer</h3>
+<p>In this case you will need to transfer the data from the <code>7.x</code> instance of the DB to a new <code>8.0</code> instance.</p>
+<ol>
+<li>Create a new <code>8.0</code> instance of MongoDB.</li>
+<li>Add the new instance to the replica set.</li>
+<li>Use <code>rs.stepDown()</code> to step down the <code>7.x</code> instance.</li>
+<li>Use <code>rs.reconfig()</code> to reconfigure the replica set to include the new <code>8.0</code> instance.
+Here is the command for reconfiguring the replica set:<pre data-lang="js" style="background-color:#2b303b;color:#c0c5ce;" class="language-js "><code class="language-js" data-lang="js"><span style="color:#bf616a;">rs</span><span>.</span><span style="color:#8fa1b3;">reconfig</span><span>({
+</span><span>    &quot;</span><span style="color:#a3be8c;">_id</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">rs0</span><span>&quot;,
+</span><span>    &quot;</span><span style="color:#a3be8c;">version</span><span>&quot;: </span><span style="color:#d08770;">2</span><span>,
+</span><span>    &quot;</span><span style="color:#a3be8c;">members</span><span>&quot;: [
+</span><span>        {
+</span><span>            &quot;</span><span style="color:#a3be8c;">_id</span><span>&quot;: </span><span style="color:#d08770;">0</span><span>,
+</span><span>            &quot;</span><span style="color:#a3be8c;">host</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">{MONGO_7_X_PUBLIC_IP}:27017</span><span>&quot;,
+</span><span>        },
+</span><span>        {
+</span><span>            &quot;</span><span style="color:#a3be8c;">_id</span><span>&quot;: </span><span style="color:#d08770;">1</span><span>,
+</span><span>            &quot;</span><span style="color:#a3be8c;">host</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">{MONGO_8_0_PUBLIC_IP}:27017</span><span>&quot;,
+</span><span>        }
+</span><span>    ]
+</span><span>})
+</span></code></pre>
+This will reconfigure the replica set to include the new <code>8.0</code> instance.</li>
+<li>Use <code>rs.status()</code> to check the status of the replica set.</li>
+</ol>
+<h2 id="conclusion">Conclusion</h2>
+<p>That was what worked for me. Let me know in the comments if you run into any issues with this process and I'll try to help you out.</p>
+</div>
+<script src="https://utteranc.es/client.js"
+        repo="iambenkay/iambenkay.github.io"
+        issue-term="pathname"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script>
+<script>
+    function loadCopyButtons() {
+        const codeBlocks = document.querySelectorAll("pre");
+
+        codeBlocks.forEach(block => {
+            const copyBtn = document.createElement("div");
+            copyBtn.textContent = "Copy";
+            copyBtn.classList.add("absolute", "top-[0.5rem]", "right-[0.5rem]", "bg-white/10", "cursor-pointer", "rounded", "px-1", "py-0.5");
+            block.appendChild(copyBtn);
+        })
+
+        codeBlocks.forEach(block => {
+            const copyBtn = block.querySelector("div");
+            copyBtn.addEventListener("click", () => {
+                const code = block.textContent;
+                navigator.clipboard.writeText(code);
+                copyBtn.textContent = "Copied!";
+                setTimeout(() => {
+                    copyBtn.textContent = "Copy";
+                }, 2000);
+            })
+        })
+    }
+
+    (function () {
+        loadCopyButtons()
+    })()
+</script>
+
+          <div class="h-8"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyDbmff0_NioNCGzbRl_E_ldtXbxQIcpcJs",
+    authDomain: "benkay-blog.firebaseapp.com",
+    projectId: "benkay-blog",
+    storageBucket: "benkay-blog.firebasestorage.app",
+    messagingSenderId: "880946931838",
+    appId: "1:880946931838:web:9a0899015b0ca6eadd902f",
+    measurementId: "G-LPDNWEQSQK"
+  };
+
+  // Initialize Firebase
+  if (window.location.hostname !== "localhost") {
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+  }
+</script>
+</body>
+</html>
