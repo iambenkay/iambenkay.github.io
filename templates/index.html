@@ -7,8 +7,9 @@
   {% set first_page = section.pages | first %}
   <a href="{{ first_page.path }}">
     <div class="mt-8 grid md:grid-cols-2 gap-8">
+      {% set first_image = resize_image(path=first_page.extra.header_img, width=452, height=288) %}
       <div class="relative">
-        <img loading="lazy" src="{{ first_page.extra.header_img }}" alt="{{first_page.extra.header_alt}}" class="md:h-72 rounded bg-gradient-to-br from-fuchsia-500 via-violet-500 to-sky-400 shadow-lg object-cover object-center">
+        <img loading="lazy" src="{{ first_image.url }}" alt="{{first_page.extra.header_alt}}" class="md:h-72 rounded bg-gradient-to-br from-fuchsia-500 via-violet-500 to-sky-400 shadow-lg object-cover object-center">
       </div>
       <div class="flex flex-col justify-start">
         <p class="text-sm text-slate-500">{{ first_page.date | date(format="%B %d, %Y") }}</p>
@@ -25,7 +26,8 @@
       {% endif %}
       <a href="{{ page.path }}">
         <article>
-          <img loading="lazy" src="{{ page.extra.header_img }}" alt="{{page.extra.header_alt}}" class="h-40 rounded bg-gradient-to-br from-fuchsia-500 via-violet-500 to-sky-400 shadow-lg object-cover object-center">
+          {% set image = resize_image(path=page.extra.header_img, width=282, height=160) %}
+          <img loading="lazy" src="{{ image.url }}" alt="{{page.extra.header_alt}}" class="h-40 rounded bg-gradient-to-br from-fuchsia-500 via-violet-500 to-sky-400 shadow-lg object-cover object-center">
           <p class="mt-3 text-xs text-slate-500">{{ page.date | date(format="%B %d, %Y") }}</p>
           <h3 class="mt-1 text-lg font-semibold text-slate-900">{{ page.title }}</h3>
           <p class="mt-2 text-sm text-slate-600">{{ page.description }}...</p>
